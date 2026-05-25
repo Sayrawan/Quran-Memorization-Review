@@ -3,388 +3,1122 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>متتبع حفظ القرآن</title>
-<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;500;700&display=swap" rel="stylesheet">
+<title>رحلة الحفظ | القرآن الكريم</title>
+<link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;500;700&family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --rose: #43a047;
+  --rose-light: #a5d6a7;
+  --rose-pale: #f1f8f4;
+  --rose-blush: #f8fffa;
+  --rose-deep: #2e7d32;
+  --gold: #7cb342;
+  --gold-light: #e6f4d7;
+  --petal1: #dcedc8;
+  --petal2: #c5e1a5;
+  --bg: #fbfffb;
+  --text-dark: #1b4332;
+  --text-mid: #40916c;
+  --text-soft: #74c69d;
+  --card-bg: rgba(255,255,255,0.9);
+  --shadow: 0 8px 32px rgba(67,160,71,0.1);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
 
 body {
   min-height: 100vh;
-  background: #f4fbf4;
+  background-color: var(--bg);
   font-family: 'Amiri', serif;
-  padding: 24px 16px 40px;
-  background-image:
-    radial-gradient(circle at 15% 15%, rgba(144,210,144,0.2) 0%, transparent 40%),
-    radial-gradient(circle at 85% 85%, rgba(100,180,130,0.15) 0%, transparent 40%);
+  color: var(--text-dark);
+  overflow-x: hidden;
+  position: relative;
 }
 
-.header { text-align: center; margin-bottom: 28px; }
+/* ── Petal rain background ── */
+.petals-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.petal {
+  position: absolute;
+  top: -40px;
+  width: 18px;
+  height: 22px;
+  border-radius: 60% 40% 60% 40%;
+  opacity: 0;
+  animation: petalFall linear infinite;
+}
+@keyframes petalFall {
+  0%   { transform: translateY(0) rotate(0deg) scale(1);   opacity: 0; }
+  10%  { opacity: 0.7; }
+  90%  { opacity: 0.4; }
+  100% { transform: translateY(110vh) rotate(360deg) scale(0.6); opacity: 0; }
+}
+
+/* ── Noise texture overlay ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Gradient mesh */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 10% 10%, rgba(129,199,132,0.22) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 90% 90%, rgba(165,214,167,0.18) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(232,245,233,0.4) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Layout ── */
+.wrapper {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 16px 60px;
+}
+
+/* ── Hero header ── */
+.hero {
+  text-align: center;
+  padding: 52px 20px 36px;
+  position: relative;
+}
+
+.basmala-wrap {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 20px;
+}
 
 .basmala {
+  font-family: 'Amiri Quran', serif;
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  color: var(--rose-deep);
+  line-height: 1.8;
+  display: block;
+}
+
+.basmala-deco {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.hero-title {
+  font-family: 'Scheherazade New', serif;
+  font-size: clamp(1.3rem, 4vw, 2rem);
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 18px 0 6px;
+  letter-spacing: 0.5px;
+}
+
+.hero-sub {
+  font-size: 1.05rem;
+  color: var(--text-soft);
+  margin-bottom: 28px;
+}
+
+/* ── Stats ring ── */
+.stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: var(--card-bg);
+  border: 1px solid var(--petal1);
+  border-radius: 20px;
+  padding: 14px 22px;
+  text-align: center;
+  min-width: 110px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(67,160,71,0.18); }
+
+.stat-num {
   font-family: 'Scheherazade New', serif;
   font-size: 1.9rem;
-  color: #2d6e3a;
-  margin-bottom: 10px;
-  line-height: 1.6;
+  font-weight: 700;
+  color: var(--rose);
+  line-height: 1.1;
+  display: block;
+}
+.stat-label {
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  margin-top: 3px;
+  display: block;
 }
 
-.subtitle { font-size: 1rem; color: #5a9e6a; margin-bottom: 12px; }
+/* ── Ring progress ── */
+.ring-wrap {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  margin: 0 auto 32px;
+  filter: drop-shadow(0 6px 18px rgba(67,160,71,0.18));
+}
+.ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: var(--rose-pale); stroke-width: 10; }
+.ring-fill {
+  fill: none;
+  stroke: url(#ringGrad);
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 345;
+  stroke-dashoffset: 345;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+.ring-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.ring-pct {
+  font-family: 'Scheherazade New', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--rose-deep);
+  line-height: 1;
+}
+.ring-sub { font-size: 0.7rem; color: var(--text-soft); }
 
-.counter {
-  display: inline-block;
-  background: linear-gradient(135deg, #7ec896, #3a8c52);
-  color: white;
-  padding: 6px 24px;
-  border-radius: 30px;
+/* ── Filters / search ── */
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.search-box {
+  flex: 1;
+  min-width: 160px;
+  position: relative;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 10px 16px 10px 40px;
+  border: 1.5px solid var(--petal1);
+  border-radius: 14px;
+  background: var(--card-bg);
+  font-family: 'Amiri', serif;
   font-size: 1rem;
-  box-shadow: 0 3px 12px rgba(50,140,80,0.25);
+  color: var(--text-dark);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  text-align: right;
+}
+.search-box input:focus {
+  border-color: var(--rose-light);
+  box-shadow: 0 0 0 3px rgba(67,160,71,0.12);
+}
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-soft);
+  font-size: 1rem;
 }
 
-.juz-section {
-  margin-bottom: 18px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(50,140,80,0.1);
-  overflow: hidden;
-  border: 1px solid #c8e8d0;
+.filter-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-btn {
+  padding: 8px 16px;
+  border-radius: 25px;
+  border: 1.5px solid var(--petal1);
+  background: var(--card-bg);
+  font-family: 'Amiri', serif;
+  font-size: 0.9rem;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
 }
+.filter-btn:hover { background: var(--rose-pale); }
+.filter-btn.active {
+  background: linear-gradient(135deg, var(--petal2), var(--rose));
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 3px 12px rgba(67,160,71,0.25);
+}
+
+/* ── Juz section ── */
+.juz-section {
+  margin-bottom: 20px;
+  background: var(--card-bg);
+  border-radius: 20px;
+  border: 1px solid rgba(165,214,167,0.5);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  transition: opacity 0.3s;
+}
+.juz-section.hidden { display: none; }
 
 .juz-header {
-  background: linear-gradient(135deg, #daf0e0, #bce0c8);
-  padding: 8px 16px;
-  font-family: 'Scheherazade New', serif;
-  font-size: 0.95rem;
-  color: #2d6e3a;
+  padding: 12px 18px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  border-bottom: 1px solid #c8e8d0;
+  justify-content: space-between;
+  background: linear-gradient(
+    135deg,
+    rgba(232,245,233,0.9),
+    rgba(165,214,167,0.6)
+  );
+  border-bottom: 1px solid rgba(165,214,167,0.4);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s;
+}
+.juz-header:hover { background: linear-gradient(
+    135deg,
+    rgba(165,214,167,0.9),
+    rgba(129,199,132,0.5)
+  ); }
+
+.juz-title-wrap { display: flex; align-items: center; gap: 10px; }
+.juz-icon {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--petal2), var(--rose));
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-family: 'Scheherazade New', serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  box-shadow: 0 3px 8px rgba(67,160,71,0.25);
+}
+.juz-name {
+  font-family: 'Scheherazade New', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--rose-deep);
+}
+.juz-meta {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  margin-top: 1px;
 }
 
-.juz-header .dot { width: 8px; height: 8px; border-radius: 50%; background: #3a8c52; }
+.juz-right { display: flex; align-items: center; gap: 10px; }
+.juz-mini-progress {
+  width: 60px; height: 5px;
+  background: rgba(255,255,255,0.6);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.juz-mini-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--petal2), var(--rose));
+  border-radius: 5px;
+  transition: width 0.5s ease;
+}
+.juz-pct { font-size: 0.78rem; color: var(--rose); font-weight: 700; min-width: 30px; text-align: left; }
+.juz-chevron { color: var(--text-soft); transition: transform 0.3s; font-size: 0.8rem; }
+.juz-section.collapsed .juz-chevron { transform: rotate(180deg); }
+
+.juz-body { overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1); }
+.juz-section.collapsed .juz-body { max-height: 0 !important; }
 
 .surahs-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
   gap: 8px;
-  padding: 12px;
+  padding: 14px;
 }
 
+/* ── Surah card ── */
 .surah-btn {
-  background: #f6fcf7;
-  border: 1.5px solid #b8dcc4;
-  border-radius: 10px;
-  padding: 8px 6px;
+  position: relative;
+  background: rgba(255,255,255,0.9);
+  border: 1.5px solid rgba(165,214,167,0.6);
+  border-radius: 14px;
+  padding: 10px 8px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
   font-family: 'Amiri', serif;
-  position: relative;
-  user-select: none;
-}
-
-.surah-btn:hover {
-  background: #dff2e5;
-  border-color: #4a9e64;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(50,140,80,0.15);
-}
-
-.surah-btn .num { font-size: 0.65rem; color: #8abfa0; display: block; margin-bottom: 2px; }
-.surah-btn .name { font-size: 0.92rem; color: #1e5230; display: block; line-height: 1.3; }
-
-.surah-btn.memorized {
-  background: linear-gradient(135deg, #c8ecd4, #a0d8b4);
-  border-color: #2e8c50;
-  box-shadow: 0 2px 8px rgba(46,140,80,0.2);
-}
-
-.surah-btn.memorized .name { color: #1a4a28; font-weight: bold; }
-.surah-btn.memorized .num { color: #4a9e64; }
-
-.surah-btn.memorized::after {
-  content: '✓';
-  position: absolute;
-  top: 3px;
-  left: 6px;
-  font-size: 0.65rem;
-  color: #2e8c50;
-}
-
-.surah-btn:active { transform: scale(0.95); }
-
-.progress-wrap { margin: 0 0 24px; text-align: center; }
-
-.progress-bar-bg {
-  height: 10px;
-  background: #c8e8d0;
-  border-radius: 10px;
   overflow: hidden;
-  margin: 8px 0 4px;
+  min-height: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
 }
 
-.progress-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #7ec896, #2e8c50);
-  border-radius: 10px;
-  transition: width 0.5s ease;
-  width: 0%;
+.surah-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    var(--rose-pale),
+    rgba(129,199,132,0.2)
+  );
+  opacity: 0;
+  transition: opacity 0.25s;
+  border-radius: 13px;
 }
+.surah-btn:hover::before { opacity: 1; }
+.surah-btn:hover {
+  border-color: var(--rose-light);
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 8px 20px rgba(67,160,71,0.15);
+}
+.surah-btn:active { transform: scale(0.96); }
 
-.progress-label { font-size: 0.85rem; color: #5a9e6a; }
-
-.reset-btn {
+.surah-num {
+  font-size: 0.63rem;
+  color: var(--text-soft);
   display: block;
-  margin: 20px auto 0;
-  background: transparent;
-  border: 1.5px solid #7ec896;
-  color: #2d6e3a;
-  padding: 8px 28px;
-  border-radius: 25px;
-  font-family: 'Amiri', serif;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: all 0.2s;
+  position: relative;
+  z-index: 1;
+  font-family: 'Scheherazade New', serif;
 }
-.reset-btn:hover { background: #dff2e5; }
-
-.toast {
-  position: fixed;
-  bottom: 28px;
-  left: 50%;
-  transform: translateX(-50%) translateY(100px);
-  background: linear-gradient(135deg, #7ec896, #3a8c52);
-  color: white;
-  padding: 10px 24px;
-  border-radius: 25px;
+.surah-name {
   font-size: 0.95rem;
-  box-shadow: 0 4px 16px rgba(50,140,80,0.3);
-  z-index: 999;
-  transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
+  color: var(--text-dark);
+  display: block;
+  position: relative;
+  z-index: 1;
+  line-height: 1.3;
+  font-weight: 400;
+}
+
+/* Memorized state */
+.surah-btn.memorized {
+  background: linear-gradient(
+    135deg,
+    #e8f5e9,
+    #c8e6c9,
+    #81c784
+  ) !important;
+  border-color: var(--rose) !important;
+  box-shadow: 0 4px 14px rgba(67,160,71,0.22) !important;
+}
+.surah-btn.memorized::before { opacity: 0 !important; }
+.surah-btn.memorized .surah-name { color: var(--rose-deep); font-weight: 700; }
+.surah-btn.memorized .surah-num { color: var(--rose); }
+
+.check-badge {
+  position: absolute;
+  top: 5px;
+  left: 6px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--rose);
+  color: white;
+  font-size: 0.55rem;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(67,160,71,0.3);
+  z-index: 2;
+}
+.surah-btn.memorized .check-badge { display: flex; }
+
+/* Pulse animation on memorize */
+@keyframes memorizeRipple {
+  0% { transform: scale(0); opacity: 0.6; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+.ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  background: radial-gradient(
+    circle,
+    rgba(129,199,132,0.5),
+    transparent 70%
+  );
+  animation: memorizeRipple 0.5s ease-out forwards;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Toast ── */
+.toast-wrap {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.toast {
+  background: linear-gradient(
+    135deg,
+    rgba(27,94,32,0.92),
+    rgba(46,125,50,0.92)
+  );
+  color: white;
+  padding: 11px 26px;
+  border-radius: 30px;
+  font-size: 0.95rem;
+  font-family: 'Amiri', serif;
+  box-shadow: 0 8px 28px rgba(67,160,71,0.35);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.15);
+  transform: translateY(80px) scale(0.9);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events: none;
   white-space: nowrap;
 }
-.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.show { transform: translateY(0) scale(1); opacity: 1; }
 
-@media (max-width: 480px) {
-  .surahs-grid { grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; }
-  .surah-btn .name { font-size: 0.85rem; }
+/* ── Celebration modal ── */
+.celebrate-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(27,94,32,0.7);
+  backdrop-filter: blur(6px);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.celebrate-overlay.show { opacity: 1; pointer-events: all; }
+.celebrate-box {
+  background: linear-gradient(
+    145deg,
+    #f1f8f4,
+    #e8f5e9
+  );
+  border-radius: 28px;
+  padding: 40px 36px;
+  text-align: center;
+  max-width: 360px;
+  width: 90%;
+  border: 2px solid var(--petal1);
+  box-shadow: 0 20px 60px rgba(67,160,71,0.3);
+  transform: scale(0.85) translateY(30px);
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.celebrate-overlay.show .celebrate-box { transform: scale(1) translateY(0); }
+.celebrate-emoji { font-size: 3.5rem; margin-bottom: 12px; animation: bounce 0.8s infinite alternate; }
+@keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+.celebrate-title {
+  font-family: 'Scheherazade New', serif;
+  font-size: 1.7rem;
+  color: var(--rose-deep);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.celebrate-text { color: var(--text-mid); font-size: 1rem; line-height: 1.7; }
+.celebrate-close {
+  margin-top: 20px;
+  padding: 10px 30px;
+  background: linear-gradient(135deg, var(--petal2), var(--rose));
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-family: 'Amiri', serif;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(194,24,91,0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.celebrate-close:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(67,160,71,0.35); }
+
+/* ── Action bar ── */
+.action-bar {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+.action-btn {
+  padding: 9px 20px;
+  border-radius: 25px;
+  border: 1.5px solid var(--petal1);
+  background: var(--card-bg);
+  font-family: 'Amiri', serif;
+  font-size: 0.9rem;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(8px);
+}
+.action-btn:hover { background: var(--rose-pale); border-color: var(--rose-light); }
+.action-btn.danger:hover { background: #e8f5e9;
+  border-color: #81c784;
+  color: #2e7d32;}
+
+/* ── Quran quote ── */
+.quran-quote {
+  text-align: center;
+  padding: 24px 20px;
+  background: linear-gradient(
+    135deg,
+    rgba(232,245,233,0.6),
+    rgba(241,248,244,0.8)
+  );
+  border-radius: 20px;
+  border: 1px solid var(--petal1);
+  margin-bottom: 28px;
+  backdrop-filter: blur(8px);
+}
+.quote-text {
+  font-family: 'Scheherazade New', serif;
+  font-size: clamp(1.1rem, 3vw, 1.5rem);
+  color: var(--rose-deep);
+  line-height: 2;
+  margin-bottom: 6px;
+}
+.quote-source { font-size: 0.82rem; color: var(--text-soft); }
+
+/* ── Motivational phrases ── */
+.motivational {
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--text-soft);
+  margin-bottom: 24px;
+  font-style: italic;
+  min-height: 24px;
+  transition: opacity 0.3s;
+}
+
+/* ── Footer ── */
+.footer {
+  text-align: center;
+  padding: 30px 0 0;
+  color: var(--text-soft);
+  font-size: 0.82rem;
+}
+.footer span { color: var(--rose); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--rose-blush); }
+::-webkit-scrollbar-thumb { background: var(--petal2); border-radius: 10px; }
+
+/* ── Responsive ── */
+@media (max-width: 520px) {
+  .surahs-grid { grid-template-columns: repeat(auto-fill, minmax(82px, 1fr)); gap: 6px; }
+  .surah-name { font-size: 0.88rem; }
+  .stats-row { gap: 10px; }
+  .stat-card { min-width: 90px; padding: 12px 14px; }
 }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="basmala">بِسْمِ اللهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
-  <div class="subtitle">اضغط على السورة التي حفظتها لتتلوّن 🌿</div>
-  <div class="counter" id="counter">٠ / ١١٤ سورة</div>
-</div>
+<!-- Petal rain -->
+<div class="petals-canvas" id="petalsCanvas"></div>
 
-<div class="progress-wrap">
-  <div class="progress-bar-bg">
-    <div class="progress-bar-fill" id="progressBar"></div>
+<!-- Celebration modal -->
+<div class="celebrate-overlay" id="celebrateOverlay">
+  <div class="celebrate-box">
+    <div class="celebrate-emoji" id="celebrateEmoji">🌸</div>
+    <div class="celebrate-title" id="celebrateTitle">ما شاء الله!</div>
+    <div class="celebrate-text" id="celebrateText">أحسنت!</div>
+    <button class="celebrate-close" onclick="closeCelebrate()">بارك الله فيك 💖</button>
   </div>
-  <div class="progress-label" id="progressLabel">٠٪ من القرآن الكريم</div>
 </div>
 
-<div id="app"></div>
+<!-- Toast -->
+<div class="toast-wrap"><div class="toast" id="toast"></div></div>
 
-<button class="reset-btn" onclick="resetAll()">🔄 إعادة تعيين الكل</button>
+<div class="wrapper">
 
-<div class="toast" id="toast"></div>
+  <!-- Hero -->
+  <div class="hero">
+    <div class="basmala-wrap">
+      <span class="basmala">بِسْمِ اللهِ الرَّحْمَٰنِ الرَّحِيمِ</span>
+      <div class="basmala-deco"></div>
+    </div>
+    <h1 class="hero-title">✨ رحلة حفظ القرآن الكريم ✨</h1>
+    <p class="hero-sub">اضغط على السورة التي حفظتِها لتُضيئ بالوردي 🌹</p>
+  </div>
+
+  <!-- Quran quote -->
+  <div class="quran-quote">
+    <div class="quote-text">﴿ إِنَّ هَٰذَا الْقُرْآنَ يَهْدِي لِلَّتِي هِيَ أَقْوَمُ ﴾</div>
+    <div class="quote-source">سورة الإسراء — الآية ٩</div>
+  </div>
+
+  <!-- Ring + Stats -->
+  <div class="ring-wrap">
+    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#81c784"/>
+          <stop offset="100%" stop-color="#2e7d32"/>
+        </linearGradient>
+      </defs>
+      <circle class="ring-bg" cx="60" cy="60" r="55"/>
+      <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="55"/>
+    </svg>
+    <div class="ring-text">
+      <span class="ring-pct" id="ringPct">٠٪</span>
+      <span class="ring-sub">مكتمل</span>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <span class="stat-num" id="statMemorized">٠</span>
+      <span class="stat-label">سورة محفوظة</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num" id="statRemaining">١١٤</span>
+      <span class="stat-label">سورة متبقية</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num" id="statJuz">٠</span>
+      <span class="stat-label">جزء مكتمل</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num" id="statStreak">🌸</span>
+      <span class="stat-label">مستوى الحفظ</span>
+    </div>
+  </div>
+
+  <!-- Motivational -->
+  <div class="motivational" id="motivational">بارك الله في رحلتك مع كتابه الكريم 🌸</div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="ابحثي عن سورة..." oninput="filterSurahs()">
+    </div>
+    <div class="filter-btns">
+      <button class="filter-btn active" onclick="setFilter('all', this)">الكل</button>
+      <button class="filter-btn" onclick="setFilter('memorized', this)">المحفوظة ✓</button>
+      <button class="filter-btn" onclick="setFilter('remaining', this)">المتبقية</button>
+    </div>
+  </div>
+
+  <!-- Action bar -->
+  <div class="action-bar">
+    <button class="action-btn" onclick="expandAll()">📖 فتح الكل</button>
+    <button class="action-btn" onclick="collapseAll()">📕 طي الكل</button>
+    <button class="action-btn" onclick="markJuz()">✨ حفظ جزء كامل</button>
+    <button class="action-btn danger" onclick="resetAll()">🔄 إعادة تعيين</button>
+  </div>
+
+  <!-- Surahs by Juz -->
+  <div id="app"></div>
+
+  <div class="footer">
+    صُنع بـ <span>❤️</span> لحفّاظ القرآن الكريم<br>
+    <small style="margin-top:6px;display:block;">يحفظ تقدمك تلقائياً في متصفحك</small>
+  </div>
+</div>
 
 <script>
+/* ───────── DATA ───────── */
 const SURAHS = [
-  { num: 1, name: 'الفاتحة', juz: 1 },
-  { num: 2, name: 'البقرة', juz: 1 },
-  { num: 3, name: 'آل عمران', juz: 3 },
-  { num: 4, name: 'النساء', juz: 4 },
-  { num: 5, name: 'المائدة', juz: 6 },
-  { num: 6, name: 'الأنعام', juz: 7 },
-  { num: 7, name: 'الأعراف', juz: 8 },
-  { num: 8, name: 'الأنفال', juz: 9 },
-  { num: 9, name: 'التوبة', juz: 10 },
-  { num: 10, name: 'يونس', juz: 11 },
-  { num: 11, name: 'هود', juz: 11 },
-  { num: 12, name: 'يوسف', juz: 12 },
-  { num: 13, name: 'الرعد', juz: 13 },
-  { num: 14, name: 'إبراهيم', juz: 13 },
-  { num: 15, name: 'الحجر', juz: 14 },
-  { num: 16, name: 'النحل', juz: 14 },
-  { num: 17, name: 'الإسراء', juz: 15 },
-  { num: 18, name: 'الكهف', juz: 15 },
-  { num: 19, name: 'مريم', juz: 16 },
-  { num: 20, name: 'طه', juz: 16 },
-  { num: 21, name: 'الأنبياء', juz: 17 },
-  { num: 22, name: 'الحج', juz: 17 },
-  { num: 23, name: 'المؤمنون', juz: 18 },
-  { num: 24, name: 'النور', juz: 18 },
-  { num: 25, name: 'الفرقان', juz: 18 },
-  { num: 26, name: 'الشعراء', juz: 19 },
-  { num: 27, name: 'النمل', juz: 19 },
-  { num: 28, name: 'القصص', juz: 20 },
-  { num: 29, name: 'العنكبوت', juz: 20 },
-  { num: 30, name: 'الروم', juz: 21 },
-  { num: 31, name: 'لقمان', juz: 21 },
-  { num: 32, name: 'السجدة', juz: 21 },
-  { num: 33, name: 'الأحزاب', juz: 21 },
-  { num: 34, name: 'سبأ', juz: 22 },
-  { num: 35, name: 'فاطر', juz: 22 },
-  { num: 36, name: 'يس', juz: 22 },
-  { num: 37, name: 'الصافات', juz: 23 },
-  { num: 38, name: 'ص', juz: 23 },
-  { num: 39, name: 'الزمر', juz: 23 },
-  { num: 40, name: 'غافر', juz: 24 },
-  { num: 41, name: 'فصلت', juz: 24 },
-  { num: 42, name: 'الشورى', juz: 25 },
-  { num: 43, name: 'الزخرف', juz: 25 },
-  { num: 44, name: 'الدخان', juz: 25 },
-  { num: 45, name: 'الجاثية', juz: 25 },
-  { num: 46, name: 'الأحقاف', juz: 26 },
-  { num: 47, name: 'محمد', juz: 26 },
-  { num: 48, name: 'الفتح', juz: 26 },
-  { num: 49, name: 'الحجرات', juz: 26 },
-  { num: 50, name: 'ق', juz: 26 },
-  { num: 51, name: 'الذاريات', juz: 26 },
-  { num: 52, name: 'الطور', juz: 27 },
-  { num: 53, name: 'النجم', juz: 27 },
-  { num: 54, name: 'القمر', juz: 27 },
-  { num: 55, name: 'الرحمن', juz: 27 },
-  { num: 56, name: 'الواقعة', juz: 27 },
-  { num: 57, name: 'الحديد', juz: 27 },
-  { num: 58, name: 'المجادلة', juz: 28 },
-  { num: 59, name: 'الحشر', juz: 28 },
-  { num: 60, name: 'الممتحنة', juz: 28 },
-  { num: 61, name: 'الصف', juz: 28 },
-  { num: 62, name: 'الجمعة', juz: 28 },
-  { num: 63, name: 'المنافقون', juz: 28 },
-  { num: 64, name: 'التغابن', juz: 28 },
-  { num: 65, name: 'الطلاق', juz: 28 },
-  { num: 66, name: 'التحريم', juz: 28 },
-  { num: 67, name: 'الملك', juz: 29 },
-  { num: 68, name: 'القلم', juz: 29 },
-  { num: 69, name: 'الحاقة', juz: 29 },
-  { num: 70, name: 'المعارج', juz: 29 },
-  { num: 71, name: 'نوح', juz: 29 },
-  { num: 72, name: 'الجن', juz: 29 },
-  { num: 73, name: 'المزمل', juz: 29 },
-  { num: 74, name: 'المدثر', juz: 29 },
-  { num: 75, name: 'القيامة', juz: 29 },
-  { num: 76, name: 'الإنسان', juz: 29 },
-  { num: 77, name: 'المرسلات', juz: 29 },
-  { num: 78, name: 'النبأ', juz: 30 },
-  { num: 79, name: 'النازعات', juz: 30 },
-  { num: 80, name: 'عبس', juz: 30 },
-  { num: 81, name: 'التكوير', juz: 30 },
-  { num: 82, name: 'الانفطار', juz: 30 },
-  { num: 83, name: 'المطففين', juz: 30 },
-  { num: 84, name: 'الانشقاق', juz: 30 },
-  { num: 85, name: 'البروج', juz: 30 },
-  { num: 86, name: 'الطارق', juz: 30 },
-  { num: 87, name: 'الأعلى', juz: 30 },
-  { num: 88, name: 'الغاشية', juz: 30 },
-  { num: 89, name: 'الفجر', juz: 30 },
-  { num: 90, name: 'البلد', juz: 30 },
-  { num: 91, name: 'الشمس', juz: 30 },
-  { num: 92, name: 'الليل', juz: 30 },
-  { num: 93, name: 'الضحى', juz: 30 },
-  { num: 94, name: 'الشرح', juz: 30 },
-  { num: 95, name: 'التين', juz: 30 },
-  { num: 96, name: 'العلق', juz: 30 },
-  { num: 97, name: 'القدر', juz: 30 },
-  { num: 98, name: 'البينة', juz: 30 },
-  { num: 99, name: 'الزلزلة', juz: 30 },
-  { num: 100, name: 'العاديات', juz: 30 },
-  { num: 101, name: 'القارعة', juz: 30 },
-  { num: 102, name: 'التكاثر', juz: 30 },
-  { num: 103, name: 'العصر', juz: 30 },
-  { num: 104, name: 'الهمزة', juz: 30 },
-  { num: 105, name: 'الفيل', juz: 30 },
-  { num: 106, name: 'قريش', juz: 30 },
-  { num: 107, name: 'الماعون', juz: 30 },
-  { num: 108, name: 'الكوثر', juz: 30 },
-  { num: 109, name: 'الكافرون', juz: 30 },
-  { num: 110, name: 'النصر', juz: 30 },
-  { num: 111, name: 'المسد', juz: 30 },
-  { num: 112, name: 'الإخلاص', juz: 30 },
-  { num: 113, name: 'الفلق', juz: 30 },
-  { num: 114, name: 'الناس', juz: 30 },
+  {num:1,name:'الفاتحة',juz:1},{num:2,name:'البقرة',juz:1},
+  {num:3,name:'آل عمران',juz:3},{num:4,name:'النساء',juz:4},
+  {num:5,name:'المائدة',juz:6},{num:6,name:'الأنعام',juz:7},
+  {num:7,name:'الأعراف',juz:8},{num:8,name:'الأنفال',juz:9},
+  {num:9,name:'التوبة',juz:10},{num:10,name:'يونس',juz:11},
+  {num:11,name:'هود',juz:11},{num:12,name:'يوسف',juz:12},
+  {num:13,name:'الرعد',juz:13},{num:14,name:'إبراهيم',juz:13},
+  {num:15,name:'الحجر',juz:14},{num:16,name:'النحل',juz:14},
+  {num:17,name:'الإسراء',juz:15},{num:18,name:'الكهف',juz:15},
+  {num:19,name:'مريم',juz:16},{num:20,name:'طه',juz:16},
+  {num:21,name:'الأنبياء',juz:17},{num:22,name:'الحج',juz:17},
+  {num:23,name:'المؤمنون',juz:18},{num:24,name:'النور',juz:18},
+  {num:25,name:'الفرقان',juz:18},{num:26,name:'الشعراء',juz:19},
+  {num:27,name:'النمل',juz:19},{num:28,name:'القصص',juz:20},
+  {num:29,name:'العنكبوت',juz:20},{num:30,name:'الروم',juz:21},
+  {num:31,name:'لقمان',juz:21},{num:32,name:'السجدة',juz:21},
+  {num:33,name:'الأحزاب',juz:21},{num:34,name:'سبأ',juz:22},
+  {num:35,name:'فاطر',juz:22},{num:36,name:'يس',juz:22},
+  {num:37,name:'الصافات',juz:23},{num:38,name:'ص',juz:23},
+  {num:39,name:'الزمر',juz:23},{num:40,name:'غافر',juz:24},
+  {num:41,name:'فصلت',juz:24},{num:42,name:'الشورى',juz:25},
+  {num:43,name:'الزخرف',juz:25},{num:44,name:'الدخان',juz:25},
+  {num:45,name:'الجاثية',juz:25},{num:46,name:'الأحقاف',juz:26},
+  {num:47,name:'محمد',juz:26},{num:48,name:'الفتح',juz:26},
+  {num:49,name:'الحجرات',juz:26},{num:50,name:'ق',juz:26},
+  {num:51,name:'الذاريات',juz:26},{num:52,name:'الطور',juz:27},
+  {num:53,name:'النجم',juz:27},{num:54,name:'القمر',juz:27},
+  {num:55,name:'الرحمن',juz:27},{num:56,name:'الواقعة',juz:27},
+  {num:57,name:'الحديد',juz:27},{num:58,name:'المجادلة',juz:28},
+  {num:59,name:'الحشر',juz:28},{num:60,name:'الممتحنة',juz:28},
+  {num:61,name:'الصف',juz:28},{num:62,name:'الجمعة',juz:28},
+  {num:63,name:'المنافقون',juz:28},{num:64,name:'التغابن',juz:28},
+  {num:65,name:'الطلاق',juz:28},{num:66,name:'التحريم',juz:28},
+  {num:67,name:'الملك',juz:29},{num:68,name:'القلم',juz:29},
+  {num:69,name:'الحاقة',juz:29},{num:70,name:'المعارج',juz:29},
+  {num:71,name:'نوح',juz:29},{num:72,name:'الجن',juz:29},
+  {num:73,name:'المزمل',juz:29},{num:74,name:'المدثر',juz:29},
+  {num:75,name:'القيامة',juz:29},{num:76,name:'الإنسان',juz:29},
+  {num:77,name:'المرسلات',juz:29},{num:78,name:'النبأ',juz:30},
+  {num:79,name:'النازعات',juz:30},{num:80,name:'عبس',juz:30},
+  {num:81,name:'التكوير',juz:30},{num:82,name:'الانفطار',juz:30},
+  {num:83,name:'المطففين',juz:30},{num:84,name:'الانشقاق',juz:30},
+  {num:85,name:'البروج',juz:30},{num:86,name:'الطارق',juz:30},
+  {num:87,name:'الأعلى',juz:30},{num:88,name:'الغاشية',juz:30},
+  {num:89,name:'الفجر',juz:30},{num:90,name:'البلد',juz:30},
+  {num:91,name:'الشمس',juz:30},{num:92,name:'الليل',juz:30},
+  {num:93,name:'الضحى',juz:30},{num:94,name:'الشرح',juz:30},
+  {num:95,name:'التين',juz:30},{num:96,name:'العلق',juz:30},
+  {num:97,name:'القدر',juz:30},{num:98,name:'البينة',juz:30},
+  {num:99,name:'الزلزلة',juz:30},{num:100,name:'العاديات',juz:30},
+  {num:101,name:'القارعة',juz:30},{num:102,name:'التكاثر',juz:30},
+  {num:103,name:'العصر',juz:30},{num:104,name:'الهمزة',juz:30},
+  {num:105,name:'الفيل',juz:30},{num:106,name:'قريش',juz:30},
+  {num:107,name:'الماعون',juz:30},{num:108,name:'الكوثر',juz:30},
+  {num:109,name:'الكافرون',juz:30},{num:110,name:'النصر',juz:30},
+  {num:111,name:'المسد',juz:30},{num:112,name:'الإخلاص',juz:30},
+  {num:113,name:'الفلق',juz:30},{num:114,name:'الناس',juz:30},
 ];
 
-const JUZ_NAMES = {
-  1:'الجزء الأول',2:'الجزء الثاني',3:'الجزء الثالث',4:'الجزء الرابع',5:'الجزء الخامس',
-  6:'الجزء السادس',7:'الجزء السابع',8:'الجزء الثامن',9:'الجزء التاسع',10:'الجزء العاشر',
-  11:'الجزء الحادي عشر',12:'الجزء الثاني عشر',13:'الجزء الثالث عشر',14:'الجزء الرابع عشر',
-  15:'الجزء الخامس عشر',16:'الجزء السادس عشر',17:'الجزء السابع عشر',18:'الجزء الثامن عشر',
-  19:'الجزء التاسع عشر',20:'الجزء العشرون',21:'الجزء الحادي والعشرون',22:'الجزء الثاني والعشرون',
-  23:'الجزء الثالث والعشرون',24:'الجزء الرابع والعشرون',25:'الجزء الخامس والعشرون',
-  26:'الجزء السادس والعشرون',27:'الجزء السابع والعشرون',28:'الجزء الثامن والعشرون',
-  29:'الجزء التاسع والعشرون',30:'الجزء الثلاثون'
-};
+const JUZ_NAMES = ['الأول','الثاني','الثالث','الرابع','الخامس','السادس','السابع','الثامن','التاسع','العاشر','الحادي عشر','الثاني عشر','الثالث عشر','الرابع عشر','الخامس عشر','السادس عشر','السابع عشر','الثامن عشر','التاسع عشر','العشرون','الحادي والعشرون','الثاني والعشرون','الثالث والعشرون','الرابع والعشرون','الخامس والعشرون','السادس والعشرون','السابع والعشرون','الثامن والعشرون','التاسع والعشرون','الثلاثون'];
 
-const STORAGE_KEY = 'quran_memorized_v2';
-let memorized = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
+const MOTIVATIONS = [
+  'بارك الله في رحلتك مع كتابه الكريم 🌸',
+  'كل سورة تحفظينها نور يُضاء في قلبك ✨',
+  'حافظة القرآن لها مكانة رفيعة عند الله 💖',
+  'الملائكة تحيط بمن يتعلم القرآن 🕊️',
+  'أنتِ في رحلة الأبرار، فاستمري 🌹',
+  '"خيركم من تعلّم القرآن وعلّمه" 📖',
+  'قلبٌ يعمر بالقرآن قلبٌ لا يخبو نوره 🌟',
+];
 
-function toArabicNum(n) {
-  return String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+const MILESTONES = [
+  { at: 1,  emoji: '🌱', title: 'بداية رائعة!', text: 'حفظتِ أول سورة! كل رحلة تبدأ بخطوة.' },
+  { at: 7,  emoji: '🌷', title: 'سبع سور!', text: 'سبعة أيام، سبع سور — ما شاء الله!' },
+  { at: 10, emoji: '✨', title: 'عشر سور!', text: 'عشر سور في صدرك — بارك الله فيكِ.' },
+  { at: 30, emoji: '🌹', title: 'ثلاثون سورة!', text: 'ربع القرآن تقريباً — أنتِ رائعة!' },
+  { at: 57, emoji: '💎', title: 'نصف القرآن!', text: 'نصف القرآن في صدرك! تبارك الله.' },
+  { at: 114,emoji: '👑', title: 'ختمت القرآن!', text: 'أتممتِ حفظ القرآن الكريم! اللهم اجعله شافعاً لها.' },
+];
+
+/* ───────── STATE ───────── */
+const KEY = 'quran_tracker_v3';
+let memorized = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+let activeFilter = 'all';
+let toastTimer;
+
+/* ───────── UTILS ───────── */
+function ar(n) { return String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]); }
+function save() { localStorage.setItem(KEY, JSON.stringify([...memorized])); }
+
+function getLevel() {
+  const n = memorized.size;
+  if (n === 0)  return '—';
+  if (n < 5)    return '🌱';
+  if (n < 15)   return '🌷';
+  if (n < 30)   return '🌹';
+  if (n < 57)   return '💎';
+  if (n < 114)  return '⭐';
+  return '👑';
 }
 
-function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify([...memorized])); }
+function countCompleteJuz() {
+  const byJuz = {};
+  SURAHS.forEach(s => { if (!byJuz[s.juz]) byJuz[s.juz] = {total:0,done:0}; byJuz[s.juz].total++; if(memorized.has(s.num)) byJuz[s.juz].done++; });
+  return Object.values(byJuz).filter(j => j.total === j.done).length;
+}
 
+/* ───────── PETALS ───────── */
+function initPetals() {
+  const canvas = document.getElementById('petalsCanvas');
+  const colors = [
+    '#81c784',
+    '#66bb6a',
+    '#a5d6a7',
+    '#c8e6c9',
+    '#4caf50',
+    '#dcedc8'
+  ];
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    const size = 12 + Math.random() * 14;
+    p.style.cssText = `
+      width:${size}px; height:${size*1.3}px;
+      left:${Math.random()*100}%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      animation-duration:${6+Math.random()*8}s;
+      animation-delay:${Math.random()*8}s;
+      opacity:0;
+      border-radius:${40+Math.random()*30}% ${60-Math.random()*20}% ${40+Math.random()*20}% ${60-Math.random()*20}%;
+    `;
+    canvas.appendChild(p);
+  }
+}
+
+function burstPetals() {
+  const canvas = document.getElementById('petalsCanvas');
+  for (let i = 0; i < 6; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.style.cssText = `
+      width:14px; height:18px;
+      left:${20+Math.random()*60}%;
+      top:${Math.random()*30}%;
+      background:#81c784;
+      animation-duration:${2+Math.random()*2}s;
+      animation-delay:${Math.random()*0.5}s;
+    `;
+    canvas.appendChild(p);
+    setTimeout(() => p.remove(), 4000);
+  }
+}
+
+/* ───────── TOAST ───────── */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  clearTimeout(toastTimer);
+  t.textContent = msg;
+  t.classList.add('show');
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ───────── CELEBRATE ───────── */
+function celebrate(milestone) {
+  document.getElementById('celebrateEmoji').textContent = milestone.emoji;
+  document.getElementById('celebrateTitle').textContent = milestone.title;
+  document.getElementById('celebrateText').textContent = milestone.text;
+  document.getElementById('celebrateOverlay').classList.add('show');
+  burstPetals();
+}
+function closeCelebrate() {
+  document.getElementById('celebrateOverlay').classList.remove('show');
+}
+
+/* ───────── UPDATE UI ───────── */
 function updateUI() {
   const n = memorized.size;
-  document.getElementById('counter').textContent = `${toArabicNum(n)} / ١١٤ سورة`;
-  const pct = Math.round((n / 114) * 100);
-  document.getElementById('progressBar').style.width = pct + '%';
-  document.getElementById('progressLabel').textContent = `${toArabicNum(pct)}٪ من القرآن الكريم`;
+  const pct = Math.round((n/114)*100);
+
+  // Ring
+  const circumference = 2 * Math.PI * 55;
+  const offset = circumference * (1 - n/114);
+  document.getElementById('ringFill').style.strokeDasharray = circumference;
+  document.getElementById('ringFill').style.strokeDashoffset = offset;
+  document.getElementById('ringPct').textContent = ar(pct) + '٪';
+
+  // Stats
+  document.getElementById('statMemorized').textContent = ar(n);
+  document.getElementById('statRemaining').textContent = ar(114 - n);
+  document.getElementById('statJuz').textContent = ar(countCompleteJuz());
+  document.getElementById('statStreak').textContent = getLevel();
+
+  // Motivation
+  const m = MOTIVATIONS[Math.floor(Math.random() * MOTIVATIONS.length)];
+  document.getElementById('motivational').textContent = m;
+
+  // Buttons
   document.querySelectorAll('.surah-btn').forEach(btn => {
-    btn.classList.toggle('memorized', memorized.has(parseInt(btn.dataset.num)));
+    btn.classList.toggle('memorized', memorized.has(+btn.dataset.num));
+  });
+
+  // Juz progress
+  document.querySelectorAll('.juz-section').forEach(sec => {
+    const juzNum = +sec.dataset.juz;
+    const surahs = SURAHS.filter(s => s.juz === juzNum);
+    const done = surahs.filter(s => memorized.has(s.num)).length;
+    const pctJ = Math.round((done/surahs.length)*100);
+    sec.querySelector('.juz-mini-fill').style.width = pctJ + '%';
+    sec.querySelector('.juz-pct').textContent = ar(pctJ) + '٪';
+    sec.querySelector('.juz-meta').textContent = ar(done) + ' / ' + ar(surahs.length) + ' سور';
   });
 }
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
+/* ───────── TOGGLE SURAH ───────── */
+let prevCount = 0;
+function toggleSurah(num, name, btn) {
+  prevCount = memorized.size;
+  if (memorized.has(num)) {
+    memorized.delete(num);
+    showToast(`تمت إزالة سورة ${name}`);
+  } else {
+    memorized.add(num);
+    showToast(`ما شاء الله! حفظتِ سورة ${name} 🌸`);
+    // ripple
+    const r = document.createElement('div');
+    r.className = 'ripple';
+    btn.appendChild(r);
+    setTimeout(() => r.remove(), 600);
+  }
+  save();
+  updateUI();
+  applyFilter();
+  // Check milestones
+  const n = memorized.size;
+  if (n > prevCount) {
+    const ms = MILESTONES.find(m => m.at === n);
+    if (ms) setTimeout(() => celebrate(ms), 300);
+  }
 }
 
-function toggleSurah(num, name) {
-  if (memorized.has(num)) { memorized.delete(num); showToast(`تمت إزالة سورة ${name}`); }
-  else { memorized.add(num); showToast(`ما شاء الله! حفظت سورة ${name} 🌿`); }
-  saveState(); updateUI();
+/* ───────── FILTER ───────── */
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilter();
 }
 
+function filterSurahs() { applyFilter(); }
+
+function applyFilter() {
+  const q = document.getElementById('searchInput').value.trim();
+  document.querySelectorAll('.surah-btn').forEach(btn => {
+    const num = +btn.dataset.num;
+    const name = btn.dataset.name;
+    const isMem = memorized.has(num);
+    let show = true;
+    if (activeFilter === 'memorized' && !isMem) show = false;
+    if (activeFilter === 'remaining' && isMem) show = false;
+    if (q && !name.includes(q)) show = false;
+    btn.style.display = show ? '' : 'none';
+  });
+  // Show/hide juz sections based on visible children
+  document.querySelectorAll('.juz-section').forEach(sec => {
+    const visible = [...sec.querySelectorAll('.surah-btn')].some(b => b.style.display !== 'none');
+    sec.classList.toggle('hidden', !visible);
+  });
+}
+
+/* ───────── JUZS ───────── */
+function toggleJuz(sec) {
+  sec.classList.toggle('collapsed');
+  const body = sec.querySelector('.juz-body');
+  if (!sec.classList.contains('collapsed')) {
+    body.style.maxHeight = body.scrollHeight + 'px';
+  } else {
+    body.style.maxHeight = '0';
+  }
+}
+function expandAll() { document.querySelectorAll('.juz-section').forEach(s => { s.classList.remove('collapsed'); s.querySelector('.juz-body').style.maxHeight = s.querySelector('.juz-body').scrollHeight + 'px'; }); }
+function collapseAll() { document.querySelectorAll('.juz-section').forEach(s => { s.classList.add('collapsed'); s.querySelector('.juz-body').style.maxHeight = '0'; }); }
+
+/* ───────── MARK JUZ ───────── */
+function markJuz() {
+  const n = prompt('أدخلي رقم الجزء الذي حفظتِه (١ - ٣٠):');
+  if (!n) return;
+  const juzNum = parseInt(n);
+  if (isNaN(juzNum) || juzNum < 1 || juzNum > 30) { showToast('رقم غير صحيح'); return; }
+  const surahs = SURAHS.filter(s => s.juz === juzNum);
+  surahs.forEach(s => memorized.add(s.num));
+  save();
+  updateUI();
+  applyFilter();
+  showToast(`تم تحديد سور الجزء ${juzNum} كمحفوظة 🌸`);
+}
+
+/* ───────── RESET ───────── */
 function resetAll() {
-  if (confirm('هل تريد إعادة تعيين جميع السور؟')) { memorized.clear(); saveState(); updateUI(); }
+  if (!confirm('هل أنتِ متأكدة من إعادة تعيين كل السور؟')) return;
+  memorized.clear();
+  save();
+  updateUI();
+  applyFilter();
+  showToast('تمت إعادة التعيين');
 }
 
+/* ───────── BUILD APP ───────── */
 function buildApp() {
   const app = document.getElementById('app');
   const byJuz = {};
-  SURAHS.forEach(s => { if (!byJuz[s.juz]) byJuz[s.juz] = []; byJuz[s.juz].push(s); });
-  Object.keys(byJuz).sort((a,b) => a-b).forEach(juz => {
-    const section = document.createElement('div');
-    section.className = 'juz-section';
-    const header = document.createElement('div');
-    header.className = 'juz-header';
-    header.innerHTML = `<span class="dot"></span>${JUZ_NAMES[juz]}`;
-    section.appendChild(header);
+  SURAHS.forEach(s => { if(!byJuz[s.juz]) byJuz[s.juz]=[]; byJuz[s.juz].push(s); });
+
+  Object.keys(byJuz).sort((a,b)=>+a-+b).forEach(juz => {
+    const sec = document.createElement('div');
+    sec.className = 'juz-section';
+    sec.dataset.juz = juz;
+
+    const surahs = byJuz[juz];
+    sec.innerHTML = `
+      <div class="juz-header" onclick="toggleJuz(this.parentElement)">
+        <div class="juz-title-wrap">
+          <div class="juz-icon">${ar(+juz)}</div>
+          <div>
+            <div class="juz-name">الجزء ${JUZ_NAMES[+juz-1]}</div>
+            <div class="juz-meta">${ar(surahs.length)} سور</div>
+          </div>
+        </div>
+        <div class="juz-right">
+          <div class="juz-mini-progress"><div class="juz-mini-fill" style="width:0%"></div></div>
+          <span class="juz-pct">٠٪</span>
+          <span class="juz-chevron">▲</span>
+        </div>
+      </div>
+      <div class="juz-body"></div>
+    `;
+
+    const body = sec.querySelector('.juz-body');
     const grid = document.createElement('div');
     grid.className = 'surahs-grid';
-    byJuz[juz].forEach(s => {
+    surahs.forEach(s => {
       const btn = document.createElement('button');
-      btn.className = 'surah-btn';
+      btn.className = 'surah-btn' + (memorized.has(s.num) ? ' memorized' : '');
       btn.dataset.num = s.num;
-      if (memorized.has(s.num)) btn.classList.add('memorized');
-      btn.innerHTML = `<span class="num">${toArabicNum(s.num)}</span><span class="name">${s.name}</span>`;
-      btn.onclick = () => toggleSurah(s.num, s.name);
+      btn.dataset.name = s.name;
+      btn.innerHTML = `
+        <div class="check-badge">✓</div>
+        <span class="surah-num">${ar(s.num)}</span>
+        <span class="surah-name">${s.name}</span>
+      `;
+      btn.onclick = () => toggleSurah(s.num, s.name, btn);
       grid.appendChild(btn);
     });
-    section.appendChild(grid);
-    app.appendChild(section);
+    body.appendChild(grid);
+    // Set initial height
+    app.appendChild(sec);
+    // Let paint then measure
+    requestAnimationFrame(() => {
+      body.style.maxHeight = body.scrollHeight + 'px';
+    });
   });
 }
 
+/* ───────── INIT ───────── */
+initPetals();
 buildApp();
 updateUI();
 </script>
