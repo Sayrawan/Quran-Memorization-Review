@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>متتبع حفظ القرآن</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  background: #f4fbf4;
+  font-family: 'Amiri', serif;
+  padding: 24px 16px 40px;
+  background-image:
+    radial-gradient(circle at 15% 15%, rgba(144,210,144,0.2) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(100,180,130,0.15) 0%, transparent 40%);
+}
+
+.header { text-align: center; margin-bottom: 28px; }
+
+.basmala {
+  font-family: 'Scheherazade New', serif;
+  font-size: 1.9rem;
+  color: #2d6e3a;
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+.subtitle { font-size: 1rem; color: #5a9e6a; margin-bottom: 12px; }
+
+.counter {
+  display: inline-block;
+  background: linear-gradient(135deg, #7ec896, #3a8c52);
+  color: white;
+  padding: 6px 24px;
+  border-radius: 30px;
+  font-size: 1rem;
+  box-shadow: 0 3px 12px rgba(50,140,80,0.25);
+}
+
+.juz-section {
+  margin-bottom: 18px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(50,140,80,0.1);
+  overflow: hidden;
+  border: 1px solid #c8e8d0;
+}
+
+.juz-header {
+  background: linear-gradient(135deg, #daf0e0, #bce0c8);
+  padding: 8px 16px;
+  font-family: 'Scheherazade New', serif;
+  font-size: 0.95rem;
+  color: #2d6e3a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid #c8e8d0;
+}
+
+.juz-header .dot { width: 8px; height: 8px; border-radius: 50%; background: #3a8c52; }
+
+.surahs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
+  padding: 12px;
+}
+
+.surah-btn {
+  background: #f6fcf7;
+  border: 1.5px solid #b8dcc4;
+  border-radius: 10px;
+  padding: 8px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: 'Amiri', serif;
+  position: relative;
+  user-select: none;
+}
+
+.surah-btn:hover {
+  background: #dff2e5;
+  border-color: #4a9e64;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(50,140,80,0.15);
+}
+
+.surah-btn .num { font-size: 0.65rem; color: #8abfa0; display: block; margin-bottom: 2px; }
+.surah-btn .name { font-size: 0.92rem; color: #1e5230; display: block; line-height: 1.3; }
+
+.surah-btn.memorized {
+  background: linear-gradient(135deg, #c8ecd4, #a0d8b4);
+  border-color: #2e8c50;
+  box-shadow: 0 2px 8px rgba(46,140,80,0.2);
+}
+
+.surah-btn.memorized .name { color: #1a4a28; font-weight: bold; }
+.surah-btn.memorized .num { color: #4a9e64; }
+
+.surah-btn.memorized::after {
+  content: '✓';
+  position: absolute;
+  top: 3px;
+  left: 6px;
+  font-size: 0.65rem;
+  color: #2e8c50;
+}
+
+.surah-btn:active { transform: scale(0.95); }
+
+.progress-wrap { margin: 0 0 24px; text-align: center; }
+
+.progress-bar-bg {
+  height: 10px;
+  background: #c8e8d0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 8px 0 4px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7ec896, #2e8c50);
+  border-radius: 10px;
+  transition: width 0.5s ease;
+  width: 0%;
+}
+
+.progress-label { font-size: 0.85rem; color: #5a9e6a; }
+
+.reset-btn {
+  display: block;
+  margin: 20px auto 0;
+  background: transparent;
+  border: 1.5px solid #7ec896;
+  color: #2d6e3a;
+  padding: 8px 28px;
+  border-radius: 25px;
+  font-family: 'Amiri', serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.reset-btn:hover { background: #dff2e5; }
+
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: linear-gradient(135deg, #7ec896, #3a8c52);
+  color: white;
+  padding: 10px 24px;
+  border-radius: 25px;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 16px rgba(50,140,80,0.3);
+  z-index: 999;
+  transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 480px) {
+  .surahs-grid { grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; }
+  .surah-btn .name { font-size: 0.85rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="basmala">بِسْمِ اللهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+  <div class="subtitle">اضغط على السورة التي حفظتها لتتلوّن 🌿</div>
+  <div class="counter" id="counter">٠ / ١١٤ سورة</div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="progressBar"></div>
+  </div>
+  <div class="progress-label" id="progressLabel">٠٪ من القرآن الكريم</div>
+</div>
+
+<div id="app"></div>
+
+<button class="reset-btn" onclick="resetAll()">🔄 إعادة تعيين الكل</button>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SURAHS = [
+  { num: 1, name: 'الفاتحة', juz: 1 },
+  { num: 2, name: 'البقرة', juz: 1 },
+  { num: 3, name: 'آل عمران', juz: 3 },
+  { num: 4, name: 'النساء', juz: 4 },
+  { num: 5, name: 'المائدة', juz: 6 },
+  { num: 6, name: 'الأنعام', juz: 7 },
+  { num: 7, name: 'الأعراف', juz: 8 },
+  { num: 8, name: 'الأنفال', juz: 9 },
+  { num: 9, name: 'التوبة', juz: 10 },
+  { num: 10, name: 'يونس', juz: 11 },
+  { num: 11, name: 'هود', juz: 11 },
+  { num: 12, name: 'يوسف', juz: 12 },
+  { num: 13, name: 'الرعد', juz: 13 },
+  { num: 14, name: 'إبراهيم', juz: 13 },
+  { num: 15, name: 'الحجر', juz: 14 },
+  { num: 16, name: 'النحل', juz: 14 },
+  { num: 17, name: 'الإسراء', juz: 15 },
+  { num: 18, name: 'الكهف', juz: 15 },
+  { num: 19, name: 'مريم', juz: 16 },
+  { num: 20, name: 'طه', juz: 16 },
+  { num: 21, name: 'الأنبياء', juz: 17 },
+  { num: 22, name: 'الحج', juz: 17 },
+  { num: 23, name: 'المؤمنون', juz: 18 },
+  { num: 24, name: 'النور', juz: 18 },
+  { num: 25, name: 'الفرقان', juz: 18 },
+  { num: 26, name: 'الشعراء', juz: 19 },
+  { num: 27, name: 'النمل', juz: 19 },
+  { num: 28, name: 'القصص', juz: 20 },
+  { num: 29, name: 'العنكبوت', juz: 20 },
+  { num: 30, name: 'الروم', juz: 21 },
+  { num: 31, name: 'لقمان', juz: 21 },
+  { num: 32, name: 'السجدة', juz: 21 },
+  { num: 33, name: 'الأحزاب', juz: 21 },
+  { num: 34, name: 'سبأ', juz: 22 },
+  { num: 35, name: 'فاطر', juz: 22 },
+  { num: 36, name: 'يس', juz: 22 },
+  { num: 37, name: 'الصافات', juz: 23 },
+  { num: 38, name: 'ص', juz: 23 },
+  { num: 39, name: 'الزمر', juz: 23 },
+  { num: 40, name: 'غافر', juz: 24 },
+  { num: 41, name: 'فصلت', juz: 24 },
+  { num: 42, name: 'الشورى', juz: 25 },
+  { num: 43, name: 'الزخرف', juz: 25 },
+  { num: 44, name: 'الدخان', juz: 25 },
+  { num: 45, name: 'الجاثية', juz: 25 },
+  { num: 46, name: 'الأحقاف', juz: 26 },
+  { num: 47, name: 'محمد', juz: 26 },
+  { num: 48, name: 'الفتح', juz: 26 },
+  { num: 49, name: 'الحجرات', juz: 26 },
+  { num: 50, name: 'ق', juz: 26 },
+  { num: 51, name: 'الذاريات', juz: 26 },
+  { num: 52, name: 'الطور', juz: 27 },
+  { num: 53, name: 'النجم', juz: 27 },
+  { num: 54, name: 'القمر', juz: 27 },
+  { num: 55, name: 'الرحمن', juz: 27 },
+  { num: 56, name: 'الواقعة', juz: 27 },
+  { num: 57, name: 'الحديد', juz: 27 },
+  { num: 58, name: 'المجادلة', juz: 28 },
+  { num: 59, name: 'الحشر', juz: 28 },
+  { num: 60, name: 'الممتحنة', juz: 28 },
+  { num: 61, name: 'الصف', juz: 28 },
+  { num: 62, name: 'الجمعة', juz: 28 },
+  { num: 63, name: 'المنافقون', juz: 28 },
+  { num: 64, name: 'التغابن', juz: 28 },
+  { num: 65, name: 'الطلاق', juz: 28 },
+  { num: 66, name: 'التحريم', juz: 28 },
+  { num: 67, name: 'الملك', juz: 29 },
+  { num: 68, name: 'القلم', juz: 29 },
+  { num: 69, name: 'الحاقة', juz: 29 },
+  { num: 70, name: 'المعارج', juz: 29 },
+  { num: 71, name: 'نوح', juz: 29 },
+  { num: 72, name: 'الجن', juz: 29 },
+  { num: 73, name: 'المزمل', juz: 29 },
+  { num: 74, name: 'المدثر', juz: 29 },
+  { num: 75, name: 'القيامة', juz: 29 },
+  { num: 76, name: 'الإنسان', juz: 29 },
+  { num: 77, name: 'المرسلات', juz: 29 },
+  { num: 78, name: 'النبأ', juz: 30 },
+  { num: 79, name: 'النازعات', juz: 30 },
+  { num: 80, name: 'عبس', juz: 30 },
+  { num: 81, name: 'التكوير', juz: 30 },
+  { num: 82, name: 'الانفطار', juz: 30 },
+  { num: 83, name: 'المطففين', juz: 30 },
+  { num: 84, name: 'الانشقاق', juz: 30 },
+  { num: 85, name: 'البروج', juz: 30 },
+  { num: 86, name: 'الطارق', juz: 30 },
+  { num: 87, name: 'الأعلى', juz: 30 },
+  { num: 88, name: 'الغاشية', juz: 30 },
+  { num: 89, name: 'الفجر', juz: 30 },
+  { num: 90, name: 'البلد', juz: 30 },
+  { num: 91, name: 'الشمس', juz: 30 },
+  { num: 92, name: 'الليل', juz: 30 },
+  { num: 93, name: 'الضحى', juz: 30 },
+  { num: 94, name: 'الشرح', juz: 30 },
+  { num: 95, name: 'التين', juz: 30 },
+  { num: 96, name: 'العلق', juz: 30 },
+  { num: 97, name: 'القدر', juz: 30 },
+  { num: 98, name: 'البينة', juz: 30 },
+  { num: 99, name: 'الزلزلة', juz: 30 },
+  { num: 100, name: 'العاديات', juz: 30 },
+  { num: 101, name: 'القارعة', juz: 30 },
+  { num: 102, name: 'التكاثر', juz: 30 },
+  { num: 103, name: 'العصر', juz: 30 },
+  { num: 104, name: 'الهمزة', juz: 30 },
+  { num: 105, name: 'الفيل', juz: 30 },
+  { num: 106, name: 'قريش', juz: 30 },
+  { num: 107, name: 'الماعون', juz: 30 },
+  { num: 108, name: 'الكوثر', juz: 30 },
+  { num: 109, name: 'الكافرون', juz: 30 },
+  { num: 110, name: 'النصر', juz: 30 },
+  { num: 111, name: 'المسد', juz: 30 },
+  { num: 112, name: 'الإخلاص', juz: 30 },
+  { num: 113, name: 'الفلق', juz: 30 },
+  { num: 114, name: 'الناس', juz: 30 },
+];
+
+const JUZ_NAMES = {
+  1:'الجزء الأول',2:'الجزء الثاني',3:'الجزء الثالث',4:'الجزء الرابع',5:'الجزء الخامس',
+  6:'الجزء السادس',7:'الجزء السابع',8:'الجزء الثامن',9:'الجزء التاسع',10:'الجزء العاشر',
+  11:'الجزء الحادي عشر',12:'الجزء الثاني عشر',13:'الجزء الثالث عشر',14:'الجزء الرابع عشر',
+  15:'الجزء الخامس عشر',16:'الجزء السادس عشر',17:'الجزء السابع عشر',18:'الجزء الثامن عشر',
+  19:'الجزء التاسع عشر',20:'الجزء العشرون',21:'الجزء الحادي والعشرون',22:'الجزء الثاني والعشرون',
+  23:'الجزء الثالث والعشرون',24:'الجزء الرابع والعشرون',25:'الجزء الخامس والعشرون',
+  26:'الجزء السادس والعشرون',27:'الجزء السابع والعشرون',28:'الجزء الثامن والعشرون',
+  29:'الجزء التاسع والعشرون',30:'الجزء الثلاثون'
+};
+
+const STORAGE_KEY = 'quran_memorized_v2';
+let memorized = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
+
+function toArabicNum(n) {
+  return String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+}
+
+function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify([...memorized])); }
+
+function updateUI() {
+  const n = memorized.size;
+  document.getElementById('counter').textContent = `${toArabicNum(n)} / ١١٤ سورة`;
+  const pct = Math.round((n / 114) * 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${toArabicNum(pct)}٪ من القرآن الكريم`;
+  document.querySelectorAll('.surah-btn').forEach(btn => {
+    btn.classList.toggle('memorized', memorized.has(parseInt(btn.dataset.num)));
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function toggleSurah(num, name) {
+  if (memorized.has(num)) { memorized.delete(num); showToast(`تمت إزالة سورة ${name}`); }
+  else { memorized.add(num); showToast(`ما شاء الله! حفظت سورة ${name} 🌿`); }
+  saveState(); updateUI();
+}
+
+function resetAll() {
+  if (confirm('هل تريد إعادة تعيين جميع السور؟')) { memorized.clear(); saveState(); updateUI(); }
+}
+
+function buildApp() {
+  const app = document.getElementById('app');
+  const byJuz = {};
+  SURAHS.forEach(s => { if (!byJuz[s.juz]) byJuz[s.juz] = []; byJuz[s.juz].push(s); });
+  Object.keys(byJuz).sort((a,b) => a-b).forEach(juz => {
+    const section = document.createElement('div');
+    section.className = 'juz-section';
+    const header = document.createElement('div');
+    header.className = 'juz-header';
+    header.innerHTML = `<span class="dot"></span>${JUZ_NAMES[juz]}`;
+    section.appendChild(header);
+    const grid = document.createElement('div');
+    grid.className = 'surahs-grid';
+    byJuz[juz].forEach(s => {
+      const btn = document.createElement('button');
+      btn.className = 'surah-btn';
+      btn.dataset.num = s.num;
+      if (memorized.has(s.num)) btn.classList.add('memorized');
+      btn.innerHTML = `<span class="num">${toArabicNum(s.num)}</span><span class="name">${s.name}</span>`;
+      btn.onclick = () => toggleSurah(s.num, s.name);
+      grid.appendChild(btn);
+    });
+    section.appendChild(grid);
+    app.appendChild(section);
+  });
+}
+
+buildApp();
+updateUI();
+</script>
+</body>
+</html>
